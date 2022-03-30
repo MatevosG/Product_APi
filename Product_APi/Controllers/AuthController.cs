@@ -3,6 +3,7 @@ using DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Product_APi.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -16,57 +17,35 @@ namespace Product_APi.Controllers
 
         public static User user = new User();
         private readonly IConfiguration _configuration;
+        public AuthController(IConfiguration configuration)
+        {
+            _configuration= configuration;
+        }
 
 
-        [HttpPost("login")]
+        [HttpPost("Login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
-            if (user.Name != request.Username)
+            if (string.Equals(request.Username,"a")&& string.Equals(request.Password, "a"))
             {
-                return BadRequest("User not found.");
-            }
+                var claims = new List<Claim> { new Claim(ClaimTypes.Name, request.Username) };
+                var jwt = new JwtSecurityToken(
+               issuer: AuthOptions.ISSUER,
+               audience: AuthOptions.AUDIENCE,
+               claims: claims,
+               expires: DateTime.UtcNow.Add(TimeSpan.FromDays(1)),
+               signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
 
-            if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
-            {
-                return BadRequest("Wrong password.");
+                return new JwtSecurityTokenHandler().WriteToken(jwt);
             }
-
-            string token = CreateToken(user);
-            return Ok(token);
+            return Unauthorized("Wrong credentials");
         }
 
-        private string CreateToken(User user)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Role, "Admin")
-            };
-
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
-                _configuration.GetSection("AppSettings:Token").Value));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds);
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
-        }
+   
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(UserDto request)
         {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-            user.Name = request.Username;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-
-            return Ok(user);
+            return Ok();
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

@@ -1,15 +1,42 @@
 using BLL;
 using BLL.Contracts;
 using DAL;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Product_APi.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
-var config = builder.Configuration;
-var d = builder.Configuration.GetConnectionString("DefoultConnection");
-// Add services to the container.
+
+//builder.Services.AddAuthentication("Bearer")  
+//                                     .AddJwtBearer();
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+           
+            ValidateIssuer = true,
+           
+            ValidIssuer = AuthOptions.ISSUER,
+            
+            ValidateAudience = true,
+           
+            ValidAudience = AuthOptions.AUDIENCE,
+            
+            ValidateLifetime = true,
+            
+            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+           
+            ValidateIssuerSigningKey = true,
+        };
+    });
+
 builder.Services.AddDbContext<ProductDbContext>(option =>
-                    option
-                        .UseSqlServer(builder.Configuration
+                    option.UseSqlServer(
+                        builder.Configuration
                             .GetConnectionString("DefoultConnection")));
 builder.Services.AddControllers();
 builder.Services.AddTransient<IProductRepository, ProductRepository>();
@@ -27,6 +54,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
