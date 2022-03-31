@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BLL.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Product_APi.Controllers
 {
@@ -8,10 +10,12 @@ namespace Product_APi.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
-        [Authorize]
+       // [Authorize]
         [HttpGet("Test1")]
         public IActionResult Test1()
         {
+            var usre = new UserDto();
+            string data = JsonConvert.SerializeObject(usre);
             return Ok("helooo");    
         }
         [HttpGet("Test2")]

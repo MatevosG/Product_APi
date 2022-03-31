@@ -30,19 +30,20 @@ namespace Product_APi.Controllers
             if (pass == null)
                 return NotFound();
 
-            var nameHashDto = GetHash(request.Username);
-            var name = _userRepository.GetUserName(nameHashDto);
+            //var nameHashDto = GetHash(request.Username);
+            var name = _userRepository.GetUserName(request.Username);
             if (name == null)
                 return NotFound();
 
-            if (string.Equals(nameHashDto, name) && string.Equals(passwordHashDto, pass))
+            if (string.Equals(request.Username, name) && string.Equals(passwordHashDto, pass))
             {
+                var token = CreateToken(request);
                return Ok(CreateToken(request));
             }
             return Unauthorized("Wrong credentials");
         }
 
-        public async Task<string> CreateToken(UserDto request)
+        public string CreateToken(UserDto request)
         {
                //var password = GetHash(request.Password);
                var name = GetHash(request.Username);
@@ -58,11 +59,11 @@ namespace Product_APi.Controllers
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
-        [HttpPost("register")]
+        [HttpPost("Register")]
         public async Task<ActionResult<UserDto>> Register(UserDto request)
         {
             var passwordHash = GetHash(request.Password);
-           // var nameHash = GetHash(request.Username);
+            // var nameHash = GetHash(request.Username);
             var userDto = new UserDto();
             //userDto.Username = nameHash;
             userDto.Username = request.Username;
