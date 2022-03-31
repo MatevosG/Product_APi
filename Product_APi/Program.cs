@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 //                                     .AddJwtBearer();
 
 builder.Services.AddAuthorization();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -38,10 +39,16 @@ builder.Services.AddDbContext<ProductDbContext>(option =>
                     option.UseSqlServer(
                         builder.Configuration
                             .GetConnectionString("DefoultConnection")));
+
 builder.Services.AddControllers();
-builder.Services.AddTransient<IProductRepository, ProductRepository>();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddTransient<IProductRepository, ProductRepository>(); 
+
+builder.Services.AddTransient<IUserRepository, UserRepository>(); 
+
+ // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+ builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();

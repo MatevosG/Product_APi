@@ -1,4 +1,5 @@
 ﻿using BLL.Contracts;
+using BLL.Models;
 using DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,9 @@ namespace Product_APi.Controllers
         [Route("/[controller]/[action]/{id}")]
         public IActionResult GetProductById(int id)
         {
-            var product = _productRepository.GetById(id);   
+            var product = _productRepository.GetById(id);
+            if (product == null)
+                return BadRequest();
             return Ok(product);
         }
        
@@ -32,22 +35,30 @@ namespace Product_APi.Controllers
         }
         [HttpPost]
         [Route("/[controller]/[action]")]
-        public IActionResult CreateProduct(Product product)
+        public IActionResult CreateProduct(ProductDto productDto)
         {
-            var producte =_productRepository.CreateProduct(product);
+            if(!ModelState.IsValid)
+                return BadRequest();
+            var producte =_productRepository.CreateProduct(productDto);
             return Ok(producte);
         }
         [HttpPut]
         [Route("/[controller]/[action]")]
-        public IActionResult UpdateProduct(Product product)
+        public IActionResult UpdateProduct(ProductDto productDto)
         {
-            var producte = _productRepository.UpdateProduct(product);
+            var prod = _productRepository.GetById(productDto.Id);
+            if (prod == null)
+                return BadRequest();
+            var producte = _productRepository.UpdateProduct(productDto);
             return Ok(producte);
         }
         [HttpDelete]
         [Route("/[controller]/[action]")]
         public IActionResult DeleteProduct(int id)
         {
+            var prod = _productRepository.GetById(id);  
+            if(prod==null)
+                return BadRequest();
              _productRepository.DeleteProduct(id);
             return Ok("successfuly delete");
         }

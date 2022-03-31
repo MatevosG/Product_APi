@@ -1,12 +1,12 @@
-﻿using BLL.Models;
-using DAL.Entities;
-using Microsoft.AspNetCore.Http;
+﻿using BLL.Contracts;
+using BLL.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Product_APi.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Product_APi.Controllers
 {
@@ -14,55 +14,90 @@ namespace Product_APi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-
-        public static User user = new User();
+        private IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration,IUserRepository userRepository)
         {
             _configuration= configuration;
+            _userRepository= userRepository;
         }
-
 
         [HttpPost("Login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
-            if (string.Equals(request.Username,"a")&& string.Equals(request.Password, "a"))
+            var passwordHashDto  = GetHash(request.Password);
+            var pass = _userRepository.GetUserPassword(passwordHashDto);
+            if (pass == null)
+                return NotFound();
+
+            var nameHashDto = GetHash(request.Username);
+            var name = _userRepository.GetUserName(nameHashDto);
+            if (name == null)
+                return NotFound();
+
+            if (string.Equals(nameHashDto, name) && string.Equals(passwordHashDto, pass))
             {
-                var claims = new List<Claim> { new Claim(ClaimTypes.Name, request.Username) };
-                var jwt = new JwtSecurityToken(
+               return Ok(CreateToken(request));
+            }
+            return Unauthorized("Wrong credentials");
+        }
+
+        public async Task<string> CreateToken(UserDto request)
+        {
+               //var password = GetHash(request.Password);
+               var name = GetHash(request.Username);
+
+               var claims = new List<Claim> { new Claim(ClaimTypes.Name, name) };
+               var jwt = new JwtSecurityToken(
                issuer: AuthOptions.ISSUER,
                audience: AuthOptions.AUDIENCE,
                claims: claims,
                expires: DateTime.UtcNow.Add(TimeSpan.FromDays(1)),
                signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-
-                return new JwtSecurityTokenHandler().WriteToken(jwt);
-            }
-            return Unauthorized("Wrong credentials");
+           
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
-   
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
+        public async Task<ActionResult<UserDto>> Register(UserDto request)
         {
+            var passwordHash = GetHash(request.Password);
+           // var nameHash = GetHash(request.Username);
+            var userDto = new UserDto();
+            //userDto.Username = nameHash;
+            userDto.Username = request.Username;
+            userDto.Password = passwordHash;
+            _userRepository.CreateUser(userDto);
             return Ok();
         }
 
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        private string GetHash(string source)
         {
-            using (var hmac = new HMACSHA512())
+            using (var sha256 = SHA256.Create())
             {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                // Send a sample text to hash.  
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(source));
+                // Get the hashed string.  
+                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
             }
         }
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
-            }
-        }
+        //private string CreateUserNamedHash(string password)
+        //{
+        //    string passwordHash;
+        //    using (var hmac = new HMACSHA512())
+        //    {
+        //        passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)).ToString();
+        //    }
+        //    return passwordHash;
+        //}
+
+        //private bool VerifyPasswordHash(string password, byte[] passwordHash)
+        //{
+        //    using (var hmac = new HMACSHA512())
+        //    {
+        //        var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+        //        return computedHash.SequenceEqual(passwordHash);
+        //    }
+        //}
     }
 }

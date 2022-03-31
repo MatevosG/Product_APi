@@ -1,4 +1,5 @@
 ﻿using BLL.Contracts;
+using BLL.Models;
 using DAL;
 using DAL.Entities;
 using System;
@@ -16,13 +17,22 @@ namespace BLL
         {
             _context = context;
         }
-        public Product CreateProduct(Product product)
+        public Product CreateProduct(ProductDto productDto)
         {
+            var product = MapProduct(productDto);
            _context.Products.Add(product);
             _context.SaveChanges();
             return product;
         }
-
+        public Product MapProduct(ProductDto productDto)
+        {
+            Product product = new Product();
+            product.Name = productDto.Name;
+            product.Description = productDto.Description;
+            product.Price = productDto.Price;
+            product.ProductType = productDto.ProductType;
+            return product;
+        }
         public void DeleteProduct(int id)
         {
             var productforDelete = _context.Products.FirstOrDefault(x=>x.Id==id);
@@ -40,8 +50,9 @@ namespace BLL
             return _context.Products.FirstOrDefault(x => x.Id==id);
         }
 
-        public Product UpdateProduct(Product product)
+        public Product UpdateProduct(ProductDto productDto)
         {
+            var product = MapProduct(productDto);
             _context.Products.Update(product);
             _context.SaveChanges();
             return product;
