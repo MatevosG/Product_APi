@@ -23,7 +23,7 @@ namespace Product_APi.Controllers
             var users =_userRepository.GetAllUsers();
             return Ok(users);
         }
-        [HttpGet("GetUserById")]
+        [HttpGet("GetUserById/{id}")]
         public IActionResult GetUserById(int id)
         {
             var user = _userRepository.GetById(id);
@@ -33,7 +33,7 @@ namespace Product_APi.Controllers
             }
             return BadRequest("ther not user by that id");
         }
-        [HttpDelete("DeleteUser")]
+        [HttpDelete("DeleteUser/{id}")]
         public IActionResult DeleteUser(int id)
         {
             var userForDelete = _userRepository.GetById(id);
@@ -50,10 +50,7 @@ namespace Product_APi.Controllers
             var userForUpdate = _userRepository.GetById(userDto.Id);
             if (userForUpdate != null)
             {
-                User user = new User();
-                user.Name = userDto.Username;
-                user.Password = userDto.Password;
-                _userRepository.UpdateUser(user);
+                _userRepository.UpdateUser(userDto);
                 return Ok("successfuly deleted");
             }
             return BadRequest();

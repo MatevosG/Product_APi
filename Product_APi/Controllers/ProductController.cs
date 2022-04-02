@@ -17,7 +17,7 @@ namespace Product_APi.Controllers
 
     
         [HttpGet]
-        [Route("/[controller]/[action]/{id}")]
+        [Route("GetProductById/{id}")]
         public IActionResult GetProductById(int id)
         {
             var product = _productRepository.GetById(id);
@@ -27,14 +27,14 @@ namespace Product_APi.Controllers
         }
        
         [HttpGet]
-        [Route("/[controller]/[action]")]
+        [Route("GetAllProduct")]
         public IActionResult GetAllProduct()
         {
             var products = _productRepository.GetAll();
             return Ok(products);
         }
         [HttpPost]
-        [Route("/[controller]/[action]")]
+        [Route("CreateProduct")]
         public IActionResult CreateProduct(ProductDto productDto)
         {
             if(!ModelState.IsValid)
@@ -43,7 +43,7 @@ namespace Product_APi.Controllers
             return Ok(producte);
         }
         [HttpPut]
-        [Route("/[controller]/[action]")]
+        [Route("UpdateProduct")]
         public IActionResult UpdateProduct(ProductDto productDto)
         {
             var prod = _productRepository.GetById(productDto.Id);
@@ -53,7 +53,7 @@ namespace Product_APi.Controllers
             return Ok(producte);
         }
         [HttpDelete]
-        [Route("/[controller]/[action]")]
+        [Route("DeleteProduct/{id}")]
         public IActionResult DeleteProduct(int id)
         {
             var prod = _productRepository.GetById(id);  

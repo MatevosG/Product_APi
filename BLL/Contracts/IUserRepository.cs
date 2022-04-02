@@ -13,7 +13,7 @@ namespace BLL.Contracts
         IEnumerable<User> GetAllUsers();
         User GetById(int id);
         User CreateUser(UserDto user);
-        User UpdateUser(User user);
+        User UpdateUser(UserDto user);
         void DeleteUser(int id);
         string GetUserPassword(string password);
         string GetUserName(string username);

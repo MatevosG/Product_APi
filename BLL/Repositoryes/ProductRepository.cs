@@ -2,6 +2,7 @@
 using BLL.Models;
 using DAL;
 using DAL.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,13 +21,14 @@ namespace BLL
         public Product CreateProduct(ProductDto productDto)
         {
             var product = MapProduct(productDto);
-           _context.Products.Add(product);
+            _context.Products.Add(product);
             _context.SaveChanges();
             return product;
         }
         public Product MapProduct(ProductDto productDto)
         {
             Product product = new Product();
+            product.Id = productDto.Id; 
             product.Name = productDto.Name;
             product.Description = productDto.Description;
             product.Price = productDto.Price;
@@ -35,7 +37,7 @@ namespace BLL
         }
         public void DeleteProduct(int id)
         {
-            var productforDelete = _context.Products.FirstOrDefault(x=>x.Id==id);
+            var productforDelete = _context.Products.FirstOrDefault(x => x.Id == id);
             _context.Products.Remove(productforDelete);
             _context.SaveChanges();
         }
@@ -47,15 +49,21 @@ namespace BLL
 
         public Product GetById(int id)
         {
-            return _context.Products.FirstOrDefault(x => x.Id==id);
+            return _context.Products.FirstOrDefault(x => x.Id == id);
         }
 
         public Product UpdateProduct(ProductDto productDto)
         {
-            var product = MapProduct(productDto);
-            _context.Products.Update(product);
+            var entityprods = _context.Products.Where(x => x.Id == productDto.Id);
+            foreach (var item in entityprods)
+            {
+                item.ProductType = productDto.ProductType;
+                item.Price = productDto.Price;
+                item.Name = productDto.Name;
+                item.Description = productDto.Description;
+            }
             _context.SaveChanges();
-            return product;
+            return GetById(productDto.Id);
         }
     }
 }

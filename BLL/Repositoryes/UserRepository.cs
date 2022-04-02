@@ -58,14 +58,19 @@ namespace BLL
         public string GetUserPassword(string password)
         {
             var passwordDb = _context.Users.FirstOrDefault(x=>x.Password==password)?.Password;
-            return password;
+            return passwordDb;
         }
 
-        public User UpdateUser(User user)
+        public User UpdateUser(UserDto userDto)
         {
-            _context.Users.Update(user);
+            var entityprods = _context.Users.Where(x => x.Id == userDto.Id);
+            foreach (var item in entityprods)
+            {
+                item.Name = userDto.Username;
+                item.Password = userDto.Password;
+            }
             _context.SaveChanges();
-            return user;
+            return GetById(userDto.Id);
         }
     }
 }
