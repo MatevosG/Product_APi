@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization();
 
+// for jwt token
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -39,6 +41,11 @@ builder.Services.AddDbContext<ProductDbContext>(option =>
                     option.UseSqlServer(
                         builder.Configuration
                             .GetConnectionString("DefoultConnection")));
+ // redis
+builder.Services.AddDistributedRedisCache(options => {
+    options.Configuration = "localhost:6379";
+    options.InstanceName = "redisOne";
+       }); 
 
 builder.Services.AddControllers();
 

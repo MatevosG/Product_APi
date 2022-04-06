@@ -3,6 +3,8 @@ using BLL.Models;
 using DAL;
 using DAL.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +16,11 @@ namespace BLL
     public class ProductRepository : IProductRepository
     {
         private readonly ProductDbContext _context;
-        public ProductRepository(ProductDbContext context)
+        private readonly IDistributedCache _cache;
+        public ProductRepository(ProductDbContext context, IDistributedCache cache)
         {
             _context = context;
+            _cache = cache; 
         }
         public Product CreateProduct(ProductDto productDto)
         {
@@ -44,12 +48,38 @@ namespace BLL
 
         public IEnumerable<Product> GetAll()
         {
-            return _context.Products;
+             IEnumerable<Product> products;
+            if (string.IsNullOrEmpty(_cache.GetString("products")))
+            {
+                products = _context.Products;
+                string productsForCach = JsonConvert.SerializeObject(products);
+                _cache.SetString("products", productsForCach);
+            }
+            else
+            {
+                string productsFromCech = _cache.GetString("products");
+                products = JsonConvert.DeserializeObject<IEnumerable<Product>>(productsFromCech);
+            }
+            return products;
         }
 
         public Product GetById(int id)
         {
-            return _context.Products.FirstOrDefault(x => x.Id == id);
+            if (!string.IsNullOrEmpty(_cache.GetString("products")))
+            {
+                string productsFromCech = _cache.GetString("products");
+                var products = JsonConvert.DeserializeObject<IEnumerable<Product>>(productsFromCech);
+                var  product = products.FirstOrDefault(x => x.Id == id);
+
+                if (product != null) 
+                    return product;
+                
+                product = _context.Products.FirstOrDefault(x => x.Id == id);
+                string productForCach = JsonConvert.SerializeObject(product);
+                _cache.SetString("products", productForCach);
+                return product;
+            }
+           return null;
         }
 
         public Product UpdateProduct(ProductDto productDto)
