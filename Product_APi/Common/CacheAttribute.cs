@@ -11,11 +11,13 @@ namespace Product_APi.Common
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             //var tt = context.HttpContext.RequestServices.GetRequiredService<>
-            var cacheService = context.HttpContext.RequestServices.GetRequiredService<ICacheRepository>();
+            //var cacheService = context.HttpContext.RequestServices.GetRequiredService<ICacheRepository>();
 
-            // var casheKey = GenerateCachKeyfromRequest(context.HttpContext.Request);
-            var cachedResponse = cacheService.GetCacheResponse();
-
+            //var casheKey = context.HttpContext.Request.ToString();
+            //var cachedResponse = cacheService.GetCacheResponse(casheKey);
+            //if (!string.IsNullOrEmpty(cachedResponse))
+               
+            
         }
 
         //private string GenerateCachKeyfromRequest(HttpRequest request)

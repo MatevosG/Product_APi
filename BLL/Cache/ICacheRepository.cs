@@ -8,7 +8,9 @@ namespace BLL.Cache
 {
     public interface ICacheRepository
     {
-        bool CacheResponse(string cacheKey,object response);
+        bool AddCache(string cacheKey,object response);
         string GetCacheResponse(string cacheKey);
+        object GetCacheOrTryCache(string cacheKey, object response);
+        public void Refresh(string cacheKey);
     }
 }
