@@ -46,7 +46,9 @@ namespace BLL.Services
             {
                 return productFromCache;
             }
-            return _productRepository.GetById(id);
+            productFromCache = _productRepository.GetById(id);
+            _cacheRepository.SetOrUpdate(id.ToString(), productFromCache);
+            return productFromCache;
         }
 
         public Product UpdateProduct(ProductDto productDto)
