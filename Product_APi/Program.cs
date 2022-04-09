@@ -1,5 +1,7 @@
 using BLL;
+using BLL.Cache;
 using BLL.Contracts;
+using BLL.Services;
 using DAL;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -52,9 +54,11 @@ builder.Services.AddControllers();
 builder.Services.AddTransient<IProductRepository, ProductRepository>(); 
 
 builder.Services.AddTransient<IUserRepository, UserRepository>(); 
+builder.Services.AddTransient<ICacheRepository, CacheRepository>();
+builder.Services.AddTransient<IProductService, ProductService>();
 
- // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
- builder.Services.AddEndpointsApiExplorer();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 

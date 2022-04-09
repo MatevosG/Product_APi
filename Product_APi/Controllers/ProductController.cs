@@ -1,5 +1,6 @@
 ﻿using BLL.Contracts;
 using BLL.Models;
+using BLL.Services;
 using DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,11 @@ namespace Product_APi.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-       private IProductRepository _productRepository;
-        public ProductController(IProductRepository productRepository)
+       private IProductService _productService;
+
+        public ProductController(IProductService productService)
         {
-            _productRepository = productRepository; 
+            _productService = productService; 
         }
 
     
@@ -20,7 +22,7 @@ namespace Product_APi.Controllers
         [Route("GetProductById/{id}")]
         public IActionResult GetProductById(int id)
         {
-            var product = _productRepository.GetById(id);
+            var product = _productService.GetById(id);
             if (product == null)
                 return BadRequest();
             return Ok(product);
@@ -30,7 +32,7 @@ namespace Product_APi.Controllers
         [Route("GetAllProduct")]
         public IActionResult GetAllProduct()
         {
-            var products = _productRepository.GetAll();
+            var products = _productService.GetAll();
             return Ok(products);
         }
         [HttpPost]
@@ -39,27 +41,27 @@ namespace Product_APi.Controllers
         {
             if(!ModelState.IsValid)
                 return BadRequest();
-            var producte =_productRepository.CreateProduct(productDto);
+            var producte =_productService.CreateProduct(productDto);
             return Ok(producte);
         }
         [HttpPut]
         [Route("UpdateProduct")]
         public IActionResult UpdateProduct(ProductDto productDto)
         {
-            var prod = _productRepository.GetById(productDto.Id);
+            var prod = _productService.GetById(productDto.Id);
             if (prod == null)
                 return BadRequest();
-            var producte = _productRepository.UpdateProduct(productDto);
+            var producte = _productService.UpdateProduct(productDto);
             return Ok(producte);
         }
         [HttpDelete]
         [Route("DeleteProduct/{id}")]
         public IActionResult DeleteProduct(int id)
         {
-            var prod = _productRepository.GetById(id);  
+            var prod = _productService.GetById(id);  
             if(prod==null)
                 return BadRequest();
-             _productRepository.DeleteProduct(id);
+             _productService.DeleteProduct(id);
             return Ok("successfuly delete");
         }
     }

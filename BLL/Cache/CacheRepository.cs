@@ -13,46 +13,30 @@ namespace BLL.Cache
     public class CacheRepository : ICacheRepository
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly IConnectionMultiplexer _redis ;
         public CacheRepository(IDistributedCache distributedCache)
         {
             _distributedCache = distributedCache;
         }
-        
-        public async Task  Test(string cacheKey, object response)
-        {
-            var db = _redis.GetDatabase();
-            var foo = await db.StringGetAsync(cacheKey);
-            return foo  
-        }
-        public  bool AddCache(string cacheKey, object response)
-        {
-            if (response == null)
-                return false ; 
 
-            var serializedResponse = JsonConvert.SerializeObject(response);
-              _distributedCache.SetString(cacheKey,serializedResponse);
-            return true;
-        }
-        
-        public string GetCacheResponse(string cacheKey)
+        public T Get<T>(string key)
         {
-            var cacheResponse = _distributedCache.GetString(cacheKey);
-            if(string.IsNullOrEmpty(cacheResponse))
-                return null;
-            return cacheResponse;
+            var value = _distributedCache.GetString(key);
+
+            if (value != null)
+            {
+                return JsonConvert.DeserializeObject<T>(value);
+            }
+            return default(T);
         }
-        public object GetCacheOrTryCache(string cacheKey, object response)
+        public T SetOrUpdate<T>(string key, T value)
         {
-            var cacheResponse = GetCacheResponse(cacheKey);
-            if (!string.IsNullOrEmpty(cacheResponse))
-                return cacheResponse;
-            var cache = AddCache( cacheKey,  response);
-            return cache;
+            _distributedCache.SetString(key, JsonConvert.SerializeObject(value));
+            return value;
         }
-        public void Refresh(string cacheKey)
+
+        public void Delete<T>(string key)
         {
-            _distributedCache.Refresh(cacheKey);
+            _distributedCache.Remove(key);
         }
     }
 }
