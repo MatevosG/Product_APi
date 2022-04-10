@@ -1,4 +1,5 @@
 ﻿using BLL.Cache;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Product_APi.Blacist;
 using System.Diagnostics.CodeAnalysis;
@@ -16,18 +17,18 @@ namespace Product_APi.Common
 
             var tokenPeir = context.HttpContext.Request.Headers?.FirstOrDefault(x=>x.Key== "Authorization");
             var token= tokenPeir.Value.Value.FirstOrDefault();
-            string filterToken = string.Empty;
-            for (int i = 7; i < token.Length; i++)
+            if (string.IsNullOrEmpty(token))
             {
-                filterToken = filterToken + token[i];
+                context.Result = new BadRequestObjectResult("wrong token");
+                return;
             }
-            var lendth = filterToken.Length;
-            var blacest =_cacheRepository?.Get<Blacest>(filterToken);
-            if ( blacest ==null )
-                throw new Exception("paxar stexic aziz");
-            if (!blacest.IsValid)
-                throw new Exception("paxar stexic aziz");
-
+            token = token.Replace("Bearer ", "");
+            var blacest =_cacheRepository?.Get<BlackList>(token);
+            if (blacest == null || !blacest.IsValid)
+            {
+                context.Result = new BadRequestObjectResult("wrong token");
+                return;
+            }
 
             base.OnActionExecuting(context);
         }

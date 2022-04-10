@@ -1,6 +1,6 @@
 ﻿namespace Product_APi.Blacist
 {
-    public class Blacest
+    public class BlackList
     {
         public string Token { get; set; }
         public bool IsValid { get; set; }

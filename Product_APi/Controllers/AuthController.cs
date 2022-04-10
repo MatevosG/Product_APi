@@ -40,7 +40,7 @@ namespace Product_APi.Controllers
             if (string.Equals(request.Username, name) && string.Equals(passwordHashDto, pass))
             {
                 var token = CreateToken(request);
-                Blacest blacest = new Blacest();
+                BlackList blacest = new BlackList();
                 blacest.IsValid = true;
                 blacest.UserId= request.Id.ToString();
                 blacest.Token = token;
@@ -51,12 +51,18 @@ namespace Product_APi.Controllers
             return Unauthorized("Wrong credentials");
         }
         [HttpPost("LogOut")]
-        public async Task<ActionResult<UserDto>> LogOut(LogOutModel request)
+        public async Task<ActionResult<UserDto>> LogOut()
         {
-            var blacetsFromCache = _cacheRepository.Get<Blacest>(request.Token);
+            var tokenPeir = Request.Headers?.FirstOrDefault(x => x.Key == "Authorization");
+            var token = tokenPeir.Value.Value.FirstOrDefault()?.Replace("Bearer ","");
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("wrong token");
+            }
+            var blacetsFromCache = _cacheRepository.Get<BlackList>(token);
             blacetsFromCache.IsValid = false;
             _cacheRepository.SetOrUpdate(blacetsFromCache.Token, blacetsFromCache);
-            return Ok("you are logout");
+            return Ok("you are logged out");
         }
         public string CreateToken(UserDto request)
         {
