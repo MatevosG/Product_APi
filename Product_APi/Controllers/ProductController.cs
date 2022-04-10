@@ -2,12 +2,15 @@
 using BLL.Models;
 using BLL.Services;
 using DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Product_APi.Common;
 
 namespace Product_APi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
        private IProductService _productService;
@@ -20,6 +23,7 @@ namespace Product_APi.Controllers
     
         [HttpGet]
         [Route("GetProductById/{id}")]
+        [ChackValidationToken]
         public IActionResult GetProductById(int id)
         {
             var product = _productService.GetById(id);
@@ -46,6 +50,7 @@ namespace Product_APi.Controllers
         }
         [HttpPut]
         [Route("UpdateProduct")]
+        [ChackValidationToken]
         public IActionResult UpdateProduct(ProductDto productDto)
         {
             var prod = _productService.GetById(productDto.Id);
@@ -56,6 +61,7 @@ namespace Product_APi.Controllers
         }
         [HttpDelete]
         [Route("DeleteProduct/{id}")]
+        [ChackValidationToken]
         public IActionResult DeleteProduct(int id)
         {
             var prod = _productService.GetById(id);  

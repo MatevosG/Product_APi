@@ -1,8 +1,10 @@
-﻿using BLL.Contracts;
+﻿using BLL.Cache;
+using BLL.Contracts;
 using BLL.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Product_APi.Authorization;
+using Product_APi.Blacist;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -14,12 +16,13 @@ namespace Product_APi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private IUserRepository _userRepository;
-        private readonly IConfiguration _configuration;
-        public AuthController(IConfiguration configuration, IUserRepository userRepository)
+        private readonly IUserRepository _userRepository;
+        private readonly ICacheRepository _cacheRepository;
+
+        public AuthController(IUserRepository userRepository,ICacheRepository cacheRepository)
         {
-            _configuration = configuration;
             _userRepository = userRepository;
+            _cacheRepository = cacheRepository;
         }
 
         [HttpPost("Login")]
@@ -37,11 +40,24 @@ namespace Product_APi.Controllers
             if (string.Equals(request.Username, name) && string.Equals(passwordHashDto, pass))
             {
                 var token = CreateToken(request);
-                return Ok(CreateToken(request));
+                Blacest blacest = new Blacest();
+                blacest.IsValid = true;
+                blacest.UserId= request.Id.ToString();
+                blacest.Token = token;
+                var length = token.Length;  
+                _cacheRepository.SetOrUpdate(blacest.Token, blacest);
+                return Ok(token);
             }
             return Unauthorized("Wrong credentials");
         }
-
+        [HttpPost("LogOut")]
+        public async Task<ActionResult<UserDto>> LogOut(LogOutModel request)
+        {
+            var blacetsFromCache = _cacheRepository.Get<Blacest>(request.Token);
+            blacetsFromCache.IsValid = false;
+            _cacheRepository.SetOrUpdate(blacetsFromCache.Token, blacetsFromCache);
+            return Ok("you are logout");
+        }
         public string CreateToken(UserDto request)
         {
             var name = GetHash(request.Username);
@@ -91,5 +107,9 @@ namespace Product_APi.Controllers
         //        return computedHash.SequenceEqual(passwordHash);
         //    }
         //}
+    }
+    public class LogOutModel
+    {
+        public string Token { get; set; }
     }
 }
