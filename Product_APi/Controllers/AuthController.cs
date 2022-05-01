@@ -46,10 +46,12 @@ namespace Product_APi.Controllers
                 blacest.Token = token;
                 var length = token.Length;  
                 _cacheRepository.SetOrUpdate(blacest.Token, blacest);
-                return Ok(token);
+               var sendtoken = new  { Token = token };
+                return Ok(sendtoken);
             }
             return Unauthorized("Wrong credentials");
         }
+
         [HttpPost("LogOut")]
         public async Task<ActionResult<UserDto>> LogOut()
         {
@@ -64,6 +66,7 @@ namespace Product_APi.Controllers
             _cacheRepository.SetOrUpdate(blacetsFromCache.Token, blacetsFromCache);
             return Ok("you are logged out");
         }
+
         public string CreateToken(UserDto request)
         {
             var name = GetHash(request.Username);
@@ -114,8 +117,5 @@ namespace Product_APi.Controllers
         //    }
         //}
     }
-    public class LogOutModel
-    {
-        public string Token { get; set; }
-    }
 }
+

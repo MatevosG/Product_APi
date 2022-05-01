@@ -12,8 +12,8 @@ namespace BLL.Contracts
     {
         IEnumerable<Product> GetAll();
         Product GetById(int id);
-        Product CreateProduct(ProductDto productDto);
-        Product UpdateProduct(ProductDto productDto);
+        Product CreateProduct(Product product);
+        Product UpdateProduct(Product product);
         void DeleteProduct(int id);
     }
 }

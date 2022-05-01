@@ -10,10 +10,10 @@ namespace BLL.Services
 {
     public interface IProductService
     {
-        IEnumerable<Product> GetAll();
-        Product GetById(int id);
-        Product CreateProduct(ProductDto productDto);
-        Product UpdateProduct(ProductDto productDto);
+        IEnumerable<ProductDto> GetAll();
+        ProductDto GetById(int id);
+        ProductDto CreateProduct(ProductDto productDto);
+        ProductDto UpdateProduct(ProductDto productDto);
         void DeleteProduct(int id);
     }
 }

@@ -1,4 +1,5 @@
-﻿using BLL.Cache;
+﻿using AutoMapper;
+using BLL.Cache;
 using BLL.Contracts;
 using BLL.Models;
 using DAL.Entities;
@@ -14,18 +15,22 @@ namespace BLL.Services
     {
         private readonly ICacheRepository _cacheRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IMapper _mapper;
 
-        public ProductService(ICacheRepository cacheRepository, IProductRepository productRepository)
+        public ProductService(ICacheRepository cacheRepository, IProductRepository productRepository, IMapper mapper)
         {
             _cacheRepository = cacheRepository;
             _productRepository = productRepository;
+            _mapper = mapper;
         }
-        
-        public Product CreateProduct(ProductDto productDto)
+
+        public ProductDto CreateProduct(ProductDto productDto)
         {
-            var product = _productRepository.CreateProduct(productDto);
+            var productMap = _mapper.Map<Product>(productDto);   
+            var product = _productRepository.CreateProduct(productMap);
             var productFromCache = _cacheRepository.SetOrUpdate<Product>(product.Id.ToString(),product);
-            return productFromCache; 
+
+            return _mapper.Map<ProductDto>(productFromCache); 
         }
 
         public void DeleteProduct(int id)
@@ -34,28 +39,34 @@ namespace BLL.Services
             _cacheRepository.Delete<Product>(id.ToString());
         }
 
-        public IEnumerable<Product> GetAll()
+        public IEnumerable<ProductDto> GetAll()
         {
-            return _productRepository.GetAll(); 
+            var products = _productRepository.GetAll();
+            var productMap =_mapper.Map<List<ProductDto>>(products);
+            return productMap; 
         }
 
-        public Product GetById(int id)
+        public ProductDto GetById(int id)
         {
-            var productFromCache = _cacheRepository.Get<Product>(id.ToString());
+            var productFromCache = _cacheRepository.Get<ProductDto>(id.ToString());
             if (productFromCache!=null)
             {
                 return productFromCache;
             }
-            productFromCache = _productRepository.GetById(id);
-            _cacheRepository.SetOrUpdate(id.ToString(), productFromCache);
-            return productFromCache;
+            
+            var productForCache = _productRepository.GetById(id);
+            var productMap = _mapper.Map<ProductDto>(productForCache);
+            _cacheRepository.SetOrUpdate(id.ToString(), productMap);
+            return productMap;
         }
 
-        public Product UpdateProduct(ProductDto productDto)
+        public ProductDto UpdateProduct(ProductDto productDto)
         {
-            var productForUpdate = _productRepository.UpdateProduct(productDto);
+            var productMap = _mapper.Map<Product>(productDto);
+            var productForUpdate = _productRepository.UpdateProduct(productMap);
             productForUpdate= _cacheRepository.SetOrUpdate(productDto.Id.ToString(), productForUpdate);
-            return productForUpdate;
+            
+            return _mapper.Map<ProductDto>(productForUpdate);
         }
     }
 }

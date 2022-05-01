@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Product_APi.Authorization;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 //builder.Services.AddAuthentication("Bearer")  
@@ -47,7 +48,10 @@ builder.Services.AddDbContext<ProductDbContext>(option =>
 builder.Services.AddDistributedRedisCache(options => {
     options.Configuration = "localhost:6379";
     options.InstanceName = "redisOne";
-       }); 
+       });
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 
 builder.Services.AddControllers();
 

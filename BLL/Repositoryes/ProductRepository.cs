@@ -1,4 +1,5 @@
-﻿using BLL.Cache;
+﻿using AutoMapper;
+using BLL.Cache;
 using BLL.Contracts;
 using BLL.Models;
 using DAL;
@@ -17,28 +18,17 @@ namespace BLL
     public class ProductRepository : IProductRepository
     {
         private readonly ProductDbContext _context;
-
         public ProductRepository(ProductDbContext context)
         {
             _context = context;
         }
-        public Product CreateProduct(ProductDto productDto)
+        public Product CreateProduct(Product product)
         {
-            var product = MapProduct(productDto);
             _context.Products.Add(product);
             _context.SaveChanges();
             return product;
         }
-        public Product MapProduct(ProductDto productDto)
-        {
-            Product product = new Product();
-            product.Id = productDto.Id;
-            product.Name = productDto.Name;
-            product.Description = productDto.Description;
-            product.Price = productDto.Price;
-            product.ProductType = productDto.ProductType;
-            return product;
-        }
+       
         public void DeleteProduct(int id)
         {
             var productforDelete = _context.Products.FirstOrDefault(x => x.Id == id);
@@ -57,14 +47,14 @@ namespace BLL
             return product;
         }
 
-        public Product UpdateProduct(ProductDto productDto)
+        public Product UpdateProduct(Product product)
         {
-            var entityprod = _context.Products.FirstOrDefault(x => x.Id == productDto.Id);
+            var entityprod = _context.Products.FirstOrDefault(x => x.Id == product.Id);
 
-            entityprod.ProductType = productDto.ProductType;
-            entityprod.Price = productDto.Price;
-            entityprod.Name = productDto.Name;
-            entityprod.Description = productDto.Description;
+            entityprod.ProductType = product.ProductType;
+            entityprod.Price = product.Price;
+            entityprod.Name = product.Name;
+            entityprod.Description = product.Description;
 
             //_context.Entry(entityprod).State = EntityState.Modified;
 
