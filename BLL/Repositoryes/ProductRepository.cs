@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -45,6 +46,13 @@ namespace BLL
         {
             var product = _context.Products.FirstOrDefault(x => x.Id == id);
             return product;
+        }
+
+        public T GetTest<T>(Expression<Func<T, bool>> expression) where T : class
+        {
+            //var data = _context.Products.Where(expression).FirstOrDefault();
+           return _context.Set<T>().Where(expression).FirstOrDefault();
+            //return data;
         }
 
         public Product UpdateProduct(Product product)

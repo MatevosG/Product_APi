@@ -53,8 +53,9 @@ namespace BLL.Services
             {
                 return productFromCache;
             }
-            
-            var productForCache = _productRepository.GetById(id);
+
+            // var productForCache = _productRepository.GetById(id);
+             var productForCache = _productRepository.GetTest<Product>(x=>x.Id==id);
             var productMap = _mapper.Map<ProductDto>(productForCache);
             _cacheRepository.SetOrUpdate(id.ToString(), productMap);
             return productMap;
